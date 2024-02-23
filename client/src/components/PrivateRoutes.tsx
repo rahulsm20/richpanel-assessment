@@ -16,11 +16,6 @@ const PrivateRoute = () => {
     const checkAuth = async () => {
       try {
         const result = await verify();
-        const facebookUserData = JSON.parse(
-          sessionStorage.getItem("facebookUserData") || ""
-        );
-        console.log(facebookUserData);
-        dispatch(setFacebookUser(facebookUserData));
         dispatch(setAuthenticated(true));
         dispatch(setUser(result));
       } catch (err) {

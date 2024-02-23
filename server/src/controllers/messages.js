@@ -1,4 +1,5 @@
-const { Messenger, Platforms } = require("../utils/messenger.js");
+const { Conversation } = require("../models/message.model.js");
+const axios = require("axios");
 require("dotenv").config();
 
 if (!process.env.PAGE_ID) {
@@ -8,52 +9,31 @@ if (!process.env.PAGE_TOKEN) {
   throw new Error("Missing Page Token");
 }
 
-async function getLatestConversationMessage(req, res) {
+const getAllConversations = async (req, res) => {
   try {
-    const messenger = new Messenger(
-      Platforms.Messenger,
-      process.env.PAGE_ID,
-      process.env.PAGE_TOKEN
-    );
-    const conversations = await messenger.getConversations();
-    console.log(conversations);
+    const conversations = await Conversation.find().populate("messages");
+    const data = [];
 
-    const latestConversation = conversations.data[0];
-    const messages = await messenger.getConversationMessages(
-      latestConversation.id
-    );
-    console.log(messages);
+    for (const conversation of conversations) {
+      const { messages } = conversation;
+      if (messages && messages.length > 0) {
+        const senderId = messages[0].senderId;
+        console.log(senderId);
+        const user = await axios.get(
+          `https://graph.facebook.com/${senderId}?fields=first_name,last_name,profile_pic&access_token=${process.env.FB_MESSAGING_TOKEN}`
+        );
+        const conversationData = {
+          conversation: conversation,
+          senderData: user.data,
+        };
+        data.push(conversationData);
+      }
+    }
 
-    const latestMessage = messages.messages.data[0];
-    const message = await messenger.getMessageDetails(latestMessage.id);
-    console.log(message);
-
-    return res.status(200).json(messages, message);
+    return res.status(200).json(data);
   } catch (err) {
-    console.log("boo:", err);
+    console.log("error getting conversations: ", err);
     return res.status(400).json(err);
   }
-}
-
-// getLatestConversationMessage(facebook).then((message) => {
-//   let userId = message.id;
-//   if (userId === process.env.PAGE_ID) {
-//     userId = message.to.data[0].id;
-//   }
-//   facebook.sendTextMessage(userId, "Hello!");
-// });
-
-// const instagram = new Messenger(
-//   Platforms.Instagram,
-//   process.env.PAGE_ID,
-//   process.env.PAGE_TOKEN
-// );
-// getLatestConversationMessage(instagram).then((message) => {
-//   let userId = message.id;
-//   if (message.username === process.env.INSTAGRAM_USERNAME) {
-//     userId = message.to.data[0].id;
-//   }
-//   instagram.sendTextMessage(userId, "Hello!");
-// });
-
-module.exports = { getLatestConversationMessage };
+};
+module.exports = { getAllConversations };

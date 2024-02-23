@@ -24,7 +24,7 @@ const SignupForm = () => {
         import.meta.env.VITE_SERVER_URL + "/auth/login",
         formData
       );
-      localStorage.setItem("loginResponse", JSON.stringify(userData));
+      localStorage.setItem("loginResponse", JSON.stringify(userData.data));
       dispatch(setAuthenticated(true));
       dispatch(setUser(userData.data));
       sessionStorage.setItem("AUTH_TOKEN", userData.data.token);

@@ -1,5 +1,4 @@
 const { Pool } = require("pg");
-const mongoose = require("mongoose");
 require("dotenv").config();
 
 const db = new Pool({

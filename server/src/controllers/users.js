@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const db = require("../db/connect.js");
 const User = require("../models/user.model.js");
 
 require("dotenv").config();
@@ -10,12 +9,7 @@ const secret = process.env.SECRET || "";
 const signin = async (req, res) => {
   const { email, password } = req.body;
   try {
-    // await db.connect();
-    // const result = await db.query("SELECT * FROM users WHERE email = $1", [
-    //   email,
-    // ]);
     const user = await User.findOne({ email });
-    // const user = result.rows[0];
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -28,7 +22,7 @@ const signin = async (req, res) => {
     }
 
     const token = jwt.sign({ email: user.email, id: user.id }, secret, {
-      expiresIn: "1h",
+      expiresIn: "24h",
     });
 
     res.status(200).json({ email: user.email, token });
@@ -44,9 +38,21 @@ const signup = async (req, res) => {
     return res.status(400).json("No password");
   }
   try {
+    let userObj = {};
     const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({ name, email, password: hashedPassword });
-
+    if (name) {
+      userObj.name = name;
+    }
+    if (email) {
+      userObj.email = email;
+    }
+    if (password) {
+      userObj.password = hashedPassword;
+    }
+    // console.log(userObj);
+    const user = new User(userObj);
+    await user.save();
+    console.log(user);
     res.status(200).json({ message: "New user added" });
   } catch (error) {
     console.error("Error:", error);

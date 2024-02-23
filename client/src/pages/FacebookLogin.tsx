@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import queryString from "query-string";
 import { useDispatch, useSelector } from "react-redux";
 import { setFacebookUser } from "../store/authSlice";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../types";
-import { verifyFacebook } from "../api";
+import { api, verifyFacebook } from "../api";
+import axios from "axios";
 
 const FacebookLogin = () => {
   const facebookUser = useSelector(
@@ -12,6 +13,7 @@ const FacebookLogin = () => {
   );
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [pageConnected, setPageConnected] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -25,7 +27,7 @@ const FacebookLogin = () => {
             const user = JSON.parse(storedUser || "");
             const res = await verifyFacebook(user);
             console.log(res.data);
-            navigate("/helpdesk");
+            setPageConnected(true);
           }
         }
         if (user_data) {
@@ -34,7 +36,7 @@ const FacebookLogin = () => {
           const userData = JSON.parse(userDataString);
           console.log(userDataString);
           dispatch(setFacebookUser(userData));
-          navigate("/helpdesk");
+          setPageConnected(true);
         }
       } catch (err) {
         console.log(err);
@@ -42,20 +44,41 @@ const FacebookLogin = () => {
     };
     fetchData();
   }, []);
-  // if (facebookUser) {
-  // }
-
+  console.log(pageConnected);
+  const logout = async () => {
+    try {
+      sessionStorage.clear();
+      window.location.replace("/");
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const FBLogin = import.meta.env.VITE_SERVER_URL + "/auth/facebook";
   return (
     <div className="flex flex-col gap-10 mt-10 justify-center items-center">
       <div className="flex flex-col justify-center items-center bg-slate-50 p-10 rounded-xl gap-5">
         <p>Facebook integration</p>
         <a
-          className="btn bg-blue-600 hover:bg-blue-700 text-white border-0"
-          href={FBLogin}
+          className="btn bg-red-600 hover:bg-red-700 text-white border-0 hover:text-white"
+          onClick={() => logout()}
         >
-          Connect Page
+          Decline Integration
         </a>
+        {pageConnected ? (
+          <a
+            className="btn bg-blue-600 hover:bg-blue-700 text-white border-0 hover:text-white"
+            href="/helpdesk"
+          >
+            Reply to messages
+          </a>
+        ) : (
+          <a
+            className="btn bg-blue-600 hover:bg-blue-700 text-white border-0 hover:text-white"
+            href={FBLogin}
+          >
+            Connect Page
+          </a>
+        )}
       </div>
     </div>
   );

@@ -10,6 +10,11 @@ const { getLatestConversationMessage } = require("./controllers/messages.js");
 const app = express();
 const axios = require("axios");
 const User = require("./models/user.model.js");
+const {
+  createMessage,
+  createOrUpdateConversation,
+} = require("./lib/messages.js");
+const chatRoutes = require("./routes/chat.js");
 app.use(
   session({
     secret: process.env.SECRET || "",
@@ -29,25 +34,24 @@ passport.use(
       passReqToCallback: true,
     },
     async (_req, accessToken, _refreshToken, profile, done) => {
-      try {
-        // Check if the user exists in the database
-        let user = await User.findOne({ id: parseInt(profile.id) % 100 });
+      // try {
+      //   // let user = await User.findOne({ id: profile.id });
 
-        if (!user) {
-          // If the user does not exist, create a new user
-          user = await User.create({
-            id: parseInt(profile.id) % 100,
-            name: profile.displayName,
-            token: accessToken,
-          });
-        }
-
-        // Pass the user profile to the done callback
-        return done(null, profile);
-      } catch (err) {
-        console.log(err);
-        return done(err);
-      }
+      //   // if (!user) {
+      //   //   console.log(profile);
+      //   //   // const newUser = await User.create({
+      //   //   //   id: profile.id,
+      //   //   //   name: profile.displayName,
+      //   //   //   token: accessToken,
+      //   //   // });
+      //   //   // console.log("new: ", newUser);
+      //   // }
+      // } catch (err) {
+      //   console.log(err);
+      //   return done(err);
+      // // } finally {
+      return done(null, profile);
+      // }
     }
   )
 );
@@ -77,7 +81,6 @@ app.get(
   }
 );
 
-// Define login and logout routes
 app.get("/login", (req, res) => {
   res.send("Please log in with Facebook.");
 });
@@ -122,19 +125,41 @@ app.post("/messaging-webhook", async (req, res) => {
     if (body.object === "page") {
       body.entry.forEach(async (entry) => {
         let webhookEvent = entry.messaging[0];
-        console.log(webhookEvent);
         let senderId = webhookEvent.sender.id;
         let messageText = webhookEvent.message.text;
-        const user = await axios.get(
-          `https://graph.facebook.com/${senderId}?fields=first_name,last_name,profile_pic&access_token=${process.env.FB_MESSAGING_TOKEN}`
+        console.log(senderId, process.env.RECIPIENT_ID);
+        let user = {};
+        let message = {};
+        if (senderId != process.env.RECIPIENT_ID) {
+          user = await axios.get(
+            `https://graph.facebook.com/${senderId}?fields=first_name,last_name,profile_pic&access_token=${process.env.FB_MESSAGING_TOKEN}`
+          );
+          message = {
+            sender: {
+              senderId,
+              ...user.data,
+            },
+            message: messageText,
+          };
+        } else {
+          const userData = { first_name: "", last_name: " ", profile_pic: " " };
+          message = {
+            sender: {
+              senderId,
+              ...userData,
+            },
+          };
+        }
+        const conversation = await createOrUpdateConversation(
+          senderId,
+          process.env.RECIPIENT_ID
         );
-        const message = {
-          sender: {
-            senderId,
-            ...user.data,
-          },
-          message: messageText,
-        };
+        console.log("conv:", conversation);
+        await createMessage({
+          senderId,
+          conversation,
+          messageText,
+        });
         return res.status(200).json(message);
       });
     }
@@ -159,33 +184,31 @@ app.get("/messaging-webhook", (req, res) => {
   }
 });
 
-const sendResponseMessage = async (senderId, messageText) => {
-  // const { senderId, messageText } = req.body;
-  let messageData = {
-    recipient: {
-      id: senderId,
-    },
-    message: {
-      text: messageText,
-    },
-  };
+const sendResponseMessage = async (req, res) => {
+  try {
+    const { receiverId, messageText } = req.body;
+    let messageData = {
+      recipient: {
+        id: receiverId,
+      },
+      message: {
+        text: messageText,
+      },
+    };
 
-  await axios
-    .post(
+    const response = await axios.post(
       `https://graph.facebook.com/v13.0/me/messages?access_token=${process.env.FB_MESSAGING_TOKEN}`,
       messageData
-    )
-    .then((response) => {
-      console.log("Message sent successfully:", response.data);
-      // return res.status(200).json("message sent");
-    })
-    .catch((error) => {
-      console.error("Error sending message:", error.response.data);
-    });
+    );
+    return res.status(200).json(response.data);
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json(err);
+  }
 };
 
-// app.post("/send-message", sendResponseMessage);
-app.get("/messages", getLatestConversationMessage);
+app.post("/send-message", sendResponseMessage);
+app.use("/chat", chatRoutes);
 app.use("/", (req, res) => {
   console.log("received: ", req.body);
   res.json("Home");
