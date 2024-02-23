@@ -10,7 +10,6 @@
 - Redux Toolkit
 - Node.js + Express
 - MongoDB
-- Docker
 
 ### System design
 
@@ -25,3 +24,11 @@ cd client && npm i && npm run dev
 ```
 cd server && npm i && npm run dev
 ```
+### Setbacks and Scope for improvement
+Setbacks:
+* Although the project has been hosted, Facebook doesn't seem to auhorize app domains other than localhost without having gone through the verification process.
+* Facebook also seems to have disabled the test users feature.
+
+Scope for improvement:
+* Robust auth service like Auth0 would help secure the app.
+* Using in-memory database like Redis for caching large conversation requests would decrease query response time.
