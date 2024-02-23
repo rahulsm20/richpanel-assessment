@@ -1,18 +1,16 @@
-import { useEffect, useState } from "react";
 import queryString from "query-string";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { verifyFacebook } from "../api";
 import { setFacebookUser } from "../store/authSlice";
-import { useNavigate } from "react-router-dom";
 import { RootState } from "../types";
-import { api, verifyFacebook } from "../api";
-import axios from "axios";
 
 const FacebookLogin = () => {
   const facebookUser = useSelector(
     (state: RootState) => state.auth.facebookUser
   );
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [pageConnected, setPageConnected] = useState(false);
   useEffect(() => {
     const fetchData = async () => {

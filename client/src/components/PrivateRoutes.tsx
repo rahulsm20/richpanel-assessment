@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { Outlet, useNavigate } from "react-router-dom";
 import { verify } from "../api";
-import { setAuthenticated, setFacebookUser, setUser } from "../store/authSlice";
+import { setAuthenticated, setUser } from "../store/authSlice";
 const PrivateRoute = () => {
   // const navigate = useNavigate();
   // const isAuthenticated = useSelector(
