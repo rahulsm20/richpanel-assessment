@@ -11,9 +11,9 @@
 - Node.js + Express
 - MongoDB
 
-### System design
+### System architecture
 
-![System design](https://github.com/rahulsm20/richpanel-assessment/assets/77540672/86244045-24cc-4ead-9d63-366ea4505c07)
+![system-architecture](https://github.com/rahulsm20/richpanel-assessment/assets/77540672/6ff58ee7-bdb3-41d9-9d66-d9c1196a007b)
 
 ### Steps to run
 
