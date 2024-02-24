@@ -2,13 +2,6 @@ const { Conversation } = require("../models/message.model.js");
 const axios = require("axios");
 require("dotenv").config();
 
-if (!process.env.PAGE_ID) {
-  throw new Error("Missing Page ID");
-}
-if (!process.env.PAGE_TOKEN) {
-  throw new Error("Missing Page Token");
-}
-
 const getAllConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find().populate("messages");

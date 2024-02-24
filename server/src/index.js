@@ -3,7 +3,6 @@ const express = require("express");
 const session = require("express-session");
 const passport = require("passport");
 const { Strategy } = require("passport-facebook");
-const db = require("./db/connect");
 const mongoose = require("mongoose");
 const authRoutes = require("./routes/users.js");
 const { getLatestConversationMessage } = require("./controllers/messages.js");
@@ -33,25 +32,8 @@ passport.use(
       profileFields: ["id", "displayName"],
       passReqToCallback: true,
     },
-    async (_req, accessToken, _refreshToken, profile, done) => {
-      // try {
-      //   // let user = await User.findOne({ id: profile.id });
-
-      //   // if (!user) {
-      //   //   console.log(profile);
-      //   //   // const newUser = await User.create({
-      //   //   //   id: profile.id,
-      //   //   //   name: profile.displayName,
-      //   //   //   token: accessToken,
-      //   //   // });
-      //   //   // console.log("new: ", newUser);
-      //   // }
-      // } catch (err) {
-      //   console.log(err);
-      //   return done(err);
-      // // } finally {
+    async (_req, _accessToken, _refreshToken, profile, done) => {
       return done(null, profile);
-      // }
     }
   )
 );
@@ -109,7 +91,6 @@ function ensureAuthenticated(req, res) {
 app.listen(5000, () => console.log("Running on port 5000"));
 
 try {
-  db.connect();
   mongoose.connect(process.env.MONGO_URL);
   console.log("Connected to DB");
 } catch {
@@ -175,7 +156,7 @@ app.get("/messaging-webhook", (req, res) => {
   let challenge = req.query["hub.challenge"];
 
   if (mode && token) {
-    if (mode === "subscribe" && token === "poopoo") {
+    if (mode === "subscribe" && token === process.env.SECRET) {
       console.log("WEBHOOK_VERIFIED");
       res.status(200).send(challenge);
     } else {
