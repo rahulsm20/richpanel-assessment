@@ -17,18 +17,30 @@
 
 ### Steps to run
 
-```
-cd client && npm i && npm run dev
-```
+* Setup environment variables:
+    - [Client](https://github.com/rahulsm20/richpanel-assessment/blob/main/client/.env.example)
+    - [Server](https://github.com/rahulsm20/richpanel-assessment/blob/main/server/.env.example)  
+    Note: The .env files should be at the root of the corresponding directories i.e ./client and ./server
+* Run client
+    ```
+    cd client && npm i && npm run dev
+    ```
 
-```
-cd server && npm i && npm run dev
-```
+* Run server
+    ```
+    cd server && npm i && npm run dev
+    ```
+
+* Run server using docker 
+    ```
+    docker build -t helpdesk-api . && docker run -d -p 5000:5000 richpanel-api
+    ```
+
 ### Setbacks and Scope for improvement
-Setbacks:
-* Although the project has been hosted, Facebook doesn't seem to auhorize app domains other than localhost without having gone through the verification process.
-* Facebook also seems to have disabled the test users feature.
+- Setbacks:
+    * Although the project has been hosted, Facebook doesn't seem to auhorize app domains other than localhost without having gone through the verification process.
+    * Facebook also seems to have disabled the test users feature.
 
-Scope for improvement:
-* Robust auth service like Auth0 would help secure the app.
-* Using in-memory database like Redis for caching large conversation requests would decrease query response time.
+- Scope for improvement:
+    * Robust auth service like Auth0 would help secure the app.
+    * Using in-memory database like Redis for caching large conversation requests would decrease query response time.
