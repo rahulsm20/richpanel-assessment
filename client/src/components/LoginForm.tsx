@@ -1,9 +1,8 @@
-import axios from "axios";
 import { ChangeEvent, FormEvent, useState } from "react";
 import { useDispatch } from "react-redux";
+import { login } from "../api";
 import { setAuthenticated, setUser } from "../store/authSlice";
 import Input from "./Input";
-import { login } from "../api";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({});
