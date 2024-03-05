@@ -19,7 +19,6 @@ export const verifyFacebook = async (user: any) => {
 };
 
 export const sendMessage = async (receiverId: string, messageText: string) => {
-  // const senderId = import.meta.env.PAGE_ID;
   const data = {
     receiverId,
     messageText,
@@ -27,3 +26,8 @@ export const sendMessage = async (receiverId: string, messageText: string) => {
   const res = await api.post("send-message", data);
   return res.data;
 };
+
+export const login = async(formData:any)=>{
+  const res = await api.post("/auth/login",formData);
+  return res.data
+}

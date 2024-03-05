@@ -11,7 +11,6 @@ const getAllConversations = async (req, res) => {
       const { messages } = conversation;
       if (messages && messages.length > 0) {
         const senderId = messages[0].senderId;
-        console.log(senderId);
         const user = await axios.get(
           `https://graph.facebook.com/${senderId}?fields=first_name,last_name,profile_pic&access_token=${process.env.FB_MESSAGING_TOKEN}`
         );
